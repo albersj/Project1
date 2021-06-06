@@ -1,0 +1,73 @@
+I. BGP MISC
+A. BGP is NOT a routing protocol (per-se) 
+1. think of it as an application (reachability app) 
+2. used to exchange NLRI and NH info
+3. relies on IGP for transport and recursion (some exceptions)
+4. doesn't have own transport 
+a. can't activate on int and discover nei
+b. must specify peer and use TCP transport 
+5. generally, BGP cannot route traffic alone (need IGP, static routes, etc)
+
+B. PROs vs  CONs
+1. PROs
+a. traffic engineering
+b. most scalable/extensible
+2. CONs
+a. slow convergence
+b. can suggest, but can't dictate ingress policy
+
+C. RID
+1. RID determined via..
+a. bgp router-id cmd
+b. highest-IP on an UP loopback 
+c. highest-IP on an UP phy interface 
+
+D. R4#sh ip bgp 155.1.5.0
+BGP routing table entry for 155.1.5.0/24, version 3
+Paths: (1 available, best #1, table default)	
+Flag: 0x20
+  Advertised to update-groups: (Pending Update Generation)
+       
+  Refresh Epoch 1
+ 
+    150.1.5.5 (metric 130816) from 150.1.5.5 (150.1.5.5)
+      Origin IGP, metric 0, localpref 100, valid, external, best
+      rx pathid: 0, tx pathid: 0x0
+
+E. BGP Backdoor
+1. two AS may have ‘backdoor’ via IGP  eg DSL, P-P, due to company split or merger, etc
+2. BGP peers will prefer eBGP (AD 20) over backdoor IGP (eg AD 90)
+3. router bgp > network XXXX mask XXXX backdoor 		! changes AD for specified route from 20 to 200
+a. applies to non-local prefixes (learned routes)
+b. must be on every device in AS that you want to affect (except device hosting backdoor)
+
+F. BGP and tags
+1. when redist OSPF/EIGRP --> BGP:  BGP does not retain IGP tags (there is no place in UPDATE to store that info)
+2. when redist BGP --> OSPF/EIGRP
+a. OSPF/EIGRP routes are tagged with previous AS (not local AS) -- IDs where the route came from
+b. eg AS65004 learns route from AS65003 
+c. AS65004 redist B2O
+d. OSPF will have tag 65003 
+e. EIGRP will have ‘administrator tag’ = 65003, it will also have local AS number = 65004
+
+G. BGP Peering ACL
+1. each side initiates connection to peer tcp/179 (uses ephemeral SPort)
+2. if want ACL with one ACE for BGP
+3. ensure one side passive   ie never initiates connection, only listens on tcp/179
+R1#
+router bgp X 
+     nei 1.1.1.2 transport connection-mode passive	! R1 will never initiate connection to 1.1.1.2 tcp/179, will only listen on tcp/179
+ip access-list ext ACL-WANIN
+ 	 permit tcp host 1.1.1.2 host 1.1.1.1 eq 179		! so now, can write specific ACE
+	
+H. IGP vs BGP
+1. Overview
+a. IGP 
+1) has visibility of topology
+2) attributes belong to links (ie set cost per link, not per prefix)
+b. BGP
+1) BGP advertises application data (destinations)
+2) relies on IGP to get to those destinations
+3) prefixes have attributes (ie path attributes, eg Loc-Pref, ASPATH, MED)
+
+
