@@ -1,0 +1,3 @@
+This is original stuff in file 4
+Here is some change to file4.
+Another change to file4
