@@ -1,6 +1,1 @@
-jeff 90
-lisa 100
-tj 85
-matthew 99
-matthew 99
-matthew 99
+This is line1 of file2.
